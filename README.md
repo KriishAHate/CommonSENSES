@@ -1,48 +1,28 @@
-# CommonSENSES
+# Sensor Box Development Documentation
 
-**CommonSENSES** is a modular sensor box project designed for field deployment, environmental monitoring, and sensor data validation. This repository documents all aspects of the development, testing, and deployment pipeline.
+This repository contains the complete documentation and associated files for the development and deployment of the custom-built sensor box used in this project. The repository is organized into folders that represent key components of the development process — from mechanical and electrical design to deployment and production workflows.
 
----
+## 📁 Folder Structure
 
-## Repository Structure
+- **BOM and Production hours estimate**  
+  Contains the Bill of Materials (BOM) and time estimates for assembling the sensor box. Useful for cost tracking and planning production timelines.
 
-### `Sensor data sheets/`
-Contains datasheets and documentation for the sensors used in the system. Useful for understanding specifications, calibration procedures, and interfacing details.
+- **Sensor Box Production Checklists**  
+  Includes finalized production and assembly checklists to ensure quality and consistency during the build process.
 
-### `Box deployment pictures/`
-Photographic documentation from field deployments of the sensor box, capturing real-world setups, environments, and enclosures used.
+- **Sensor Box deployment pictures**  
+  Deployment images contributed by team members, documenting initial field use and installation of the sensor box.
 
-### `Sound sensor test 03162025/`, `03192025/`, `10292024/`
-Date-stamped folders containing raw data, observations, and notes from individual sound sensor test sessions.
+- **Sensor data sheets**  
+  Technical data sheets for all sensors integrated into the box, including electrical specifications and operational ranges.
 
-### `sound sensor test experimental plan/`
-Contains planning documents outlining the objectives, variables, and methodology for upcoming or completed sensor tests.
+- **Sound sensor tests**  
+  Results and notes from early testing of the sound sensor module, including folder reorganization and analysis history.
 
----
+## 📌 Purpose
 
-## Project Goals
-
-- Build a modular, field-ready sensor box for environmental sensing applications.
-- Evaluate sound sensor performance through repeated field trials.
-- Document and organize data for future validation and analysis.
-- Prepare for eventual manufacturing and quality control processes.
+This repository serves as a centralized, version-controlled archive of the sensor box project — enabling smooth collaboration, traceability, and reproducibility for future iterations or similar builds.
 
 ---
 
-## Future Additions
-
-- Electronic schematics and PCB files
-- Firmware for microcontroller integration
-- Manufacturing documentation and assembly guides
-- Quality control protocols for scalable production
-
----
-
-## License
-
-This project is not currently licensed for reuse. If you are interested in contributing or referencing the work, please reach out directly to the author or check back for a future license update.
-
----
-
-Developed and maintained by **Kriish Hate**.
 
