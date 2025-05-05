@@ -6,10 +6,10 @@ assembly, testing, and deployment of the custom-built sensor box used in this pr
 
 Folder Descriptions:
 
-1. 'BOM and Production hours estimate'
+1. BOM and Production hours estimate
    - Contains the Bill of Materials (BOM) and estimated assembly time for the sensor box.
 
-2. 'Sensor Box Production Checklists'
+2. Sensor Box Production Checklists
    - Includes checklists to be used during and after the sensor box production process.
 
 3. Sensor Box deployment pictures
