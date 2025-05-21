@@ -1,0 +1,1624 @@
+---
+title: 'Correlation Analysis of 3 Sound Sensors: 1inch Hole, 6mm Hole, No Hole'
+author: "KRIISH HATE"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  df_print: paged
+---
+
+```{r data processing and conversion, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# R Script: Sound Sensor Analysis
+# ===============================
+# This script reads sound sensor data from a TXT file,
+# converts raw ADC values to dB, plots a correlation graph with a best-fit line,
+# and computes linear regression parameters, displaying them on the graph.
+# Sensor 1 (open) 2 (small hole 6mm) 3 (large hole 1 inch)
+
+# ------------------------------
+# Load necessary libraries
+# ------------------------------
+# The ggplot2 library is used to create visualizations
+library(ggplot2)
+
+# ------------------------------
+# Read the data from the TXT file
+# ------------------------------
+# Define the file path for the dataset
+file_path <- "LOG (3 sensor test).TXT"  # Ensure this file is in the working directory
+
+# Read the file into a data frame
+# read.table() reads a comma-separated file without a header
+# The resulting data frame will have four columns: Timestamp, Sensor1, Sensor2, Sensor3
+data <- read.table(file_path, header = FALSE, sep = ",", 
+                   col.names = c("Timestamp", "Sensor1", "Sensor2", "Sensor3"))
+
+# ------------------------------
+# Define constants
+# ------------------------------
+# Set the reference voltage used for ADC conversion
+VREF <- 6.14
+
+# ------------------------------
+# Convert raw ADC values to dB
+# ------------------------------
+# Convert raw ADC values to voltage
+# Formula: ( (read value) / (ADC max value) ) * voltage reference
+data$Sensor1_Voltage <- ((data$Sensor1) / (32768.0)) * VREF
+data$Sensor2_Voltage <- ((data$Sensor2) / (32768.0)) * VREF
+data$Sensor3_Voltage <- ((data$Sensor3) / (32768.0)) * VREF
+
+# ------------------------------
+# Convert voltage to decibels (dB)
+# ------------------------------
+# Formula: dB = Voltage * 50 (Scaling factor)
+data$Sensor1_dB <- data$Sensor1_Voltage * 50.0
+data$Sensor2_dB <- data$Sensor2_Voltage * 50.0
+data$Sensor3_dB <- data$Sensor3_Voltage * 50.0
+```
+
+```{r data processing conversion and exporting to excel, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+library(writexl)
+
+# Combine relevant columns into a new data frame to export
+export_df <- data.frame(
+  Timestamp = data$Timestamp,
+  Sensor1_ADC = data$Sensor1,
+  Sensor2_ADC = data$Sensor2,
+  Sensor3_ADC = data$Sensor3,
+  Sensor1_Voltage = data$Sensor1_Voltage,
+  Sensor2_Voltage = data$Sensor2_Voltage,
+  Sensor3_Voltage = data$Sensor3_Voltage,
+  Sensor1_dB = data$Sensor1_dB,
+  Sensor2_dB = data$Sensor2_dB,
+  Sensor3_dB = data$Sensor3_dB
+)
+
+# Write the data frame to an Excel file
+write_xlsx(export_df, "Processed_Sensor_Data.xlsx")
+
+```
+
+
+```{r plot 1, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 1 vs. Sensor 2 dB Values with Statistics
+# ===============================
+# ------------------------------
+# Compute linear regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor2_dB = slope * Sensor1_dB + intercept
+model <- lm(Sensor2_dB ~ Sensor1_dB, data = data)
+
+# Extract regression parameters
+# Extract the slope (coefficient for Sensor1_dB)
+slope <- coef(model)[2]
+# Extract the y-intercept
+intercept <- coef(model)[1]
+# Compute the R-squared value
+r_squared <- summary(model)$r.squared
+# Compute correlation coefficient as square root of R-squared
+correlation_coefficient <- sqrt(r_squared)
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# ------------------------------
+# Determine annotation position on the plot
+# ------------------------------
+# Set the x-position for annotation as 5% from the left side
+text_x_pos <- min(data$Sensor1_dB) + (max(data$Sensor1_dB) - min(data$Sensor1_dB)) * 0.05  
+# Set the y-position for annotation as 85% from the bottom
+text_y_pos <- min(data$Sensor2_dB) + (max(data$Sensor2_dB) - min(data$Sensor2_dB)) * 0.85  
+
+# ------------------------------
+# Create a scatter plot with best-fit line
+# ------------------------------
+# Generate a scatter plot using ggplot2
+plot <- ggplot(data, aes(x = Sensor1_dB, y = Sensor2_dB)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("dB values: open vs small hole ") +
+  # Set x-axis label
+  xlab("Sensor 1 (dB)") +
+  # Set y-axis label
+  ylab("Sensor 2 (dB)") +
+  # Use a minimal theme for cleaner visualization
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor_Correlation_dB_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+
+```{r plot 2, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Raw Sensor 1 vs. Sensor 2 Analog Values with Statistics
+# ===============================
+# ------------------------------
+# Compute Linear Regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor2 = slope * Sensor1 + intercept
+model <- lm(Sensor2 ~ Sensor1, data = data)
+
+# Extract regression parameters
+slope <- coef(model)[2]  # The slope of the regression line
+intercept <- coef(model)[1]  # The y-intercept of the regression line
+r_squared <- summary(model)$r.squared  # R-squared value, indicating model fit
+correlation_coefficient <- sqrt(r_squared)  # Square root of R-squared gives correlation coefficient
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# Determine annotation position for displaying text on the plot
+text_x_pos <- min(data$Sensor1) + (max(data$Sensor1) - min(data$Sensor1)) * 0.05  # 5% from the left
+text_y_pos <- min(data$Sensor2) + (max(data$Sensor2) - min(data$Sensor2)) * 0.85  # 85% from the bottom
+
+# ------------------------------
+# Create a scatter plot of raw analog values with best-fit line
+# ------------------------------
+plot <- ggplot(data, aes(x = Sensor1, y = Sensor2)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("Raw Analog Values: open vs small hole ") +
+  # Set x-axis label
+  xlab("Sensor 1 Raw Analog Value") +
+  # Set y-axis label
+  ylab("Sensor 2 Raw Analog Value") +
+  # Use a minimal theme for a clean layout
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor_Correlation_rawlongvalue_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+
+```{r plot 3, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 1 Voltage vs. Sensor 2 Voltage with Statistics
+# ===============================
+# ------------------------------
+# Compute Linear Regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor2 Voltage = slope * Sensor1 Voltage + intercept
+model <- lm(Sensor2_Voltage ~ Sensor1_Voltage, data = data)
+
+# Extract regression parameters
+slope <- coef(model)[2]  # The slope of the regression line
+intercept <- coef(model)[1]  # The y-intercept of the regression line
+r_squared <- summary(model)$r.squared  # R-squared value, indicating model fit
+correlation_coefficient <- sqrt(r_squared)  # Square root of R-squared gives correlation coefficient
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# Determine annotation position for displaying text on the plot
+text_x_pos <- min(data$Sensor1_Voltage) + (max(data$Sensor1_Voltage) - min(data$Sensor1_Voltage)) * 0.05  # 5% from the left
+text_y_pos <- min(data$Sensor2_Voltage) + (max(data$Sensor2_Voltage) - min(data$Sensor2_Voltage)) * 0.85  # 85% from the bottom
+
+# ==============================
+# plot of Sensor 1 Voltage vs. Sensor 2 Voltage with best-fit line
+# ==============================
+plot <- ggplot(data, aes(x = Sensor1_Voltage, y = Sensor2_Voltage)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("Voltage: open vs small hole") +
+  # Set x-axis label
+  xlab("Sensor 1 Voltage (V)") +
+  # Set y-axis label
+  ylab("Sensor 2 Voltage (V)") +
+  # Use a minimal theme for a clean layout
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor_Correlation_voltage_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r plot 4, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 1 Voltage vs. Sensor 3 Voltage with Statistics
+# ===============================
+# ------------------------------
+# Compute Linear Regression for Sensor 1 vs. Sensor 3
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3 Voltage = slope * Sensor1 Voltage + intercept
+model <- lm(Sensor3_Voltage ~ Sensor1_Voltage, data = data)
+
+# Extract regression parameters
+slope <- coef(model)[2]  # The slope of the regression line
+intercept <- coef(model)[1]  # The y-intercept of the regression line
+r_squared <- summary(model)$r.squared  # R-squared value, indicating model fit
+correlation_coefficient <- sqrt(r_squared)  # Square root of R-squared gives correlation coefficient
+
+# ------------------------------
+# Create text annotation for the plot (Sensor 1 vs. Sensor 3)
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# Determine annotation position for displaying text on the plot
+text_x_pos <- min(data$Sensor1_Voltage) + (max(data$Sensor1_Voltage) - min(data$Sensor1_Voltage)) * 0.05  # 5% from the left
+text_y_pos <- min(data$Sensor3_Voltage) + (max(data$Sensor3_Voltage) - min(data$Sensor3_Voltage)) * 0.85  # 85% from the bottom
+
+# ==============================
+# Plot of Sensor 1 Voltage vs. Sensor 3 Voltage with best-fit line
+# ==============================
+plot <- ggplot(data, aes(x = Sensor1_Voltage, y = Sensor3_Voltage)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("Voltage: Open vs. Big Hole") +
+  # Set x-axis label
+  xlab("Sensor 1 Voltage (V)") +
+  # Set y-axis label
+  ylab("Sensor 3 Voltage (V)") +
+  # Use a minimal theme for a clean layout
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor1_vs_Sensor3_Correlation_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results (Sensor 1 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r plot 5, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+
+# ===============================
+# Plot Raw Sensor 1 vs. Sensor 3 Analog Values with Statistics
+# ===============================
+# ------------------------------
+# Compute Linear Regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3 = slope * Sensor1 + intercept
+model <- lm(Sensor3 ~ Sensor1, data = data)
+
+# Extract regression parameters
+slope <- coef(model)[2]  # The slope of the regression line
+intercept <- coef(model)[1]  # The y-intercept of the regression line
+r_squared <- summary(model)$r.squared  # R-squared value, indicating model fit
+correlation_coefficient <- sqrt(r_squared)  # Square root of R-squared gives correlation coefficient
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# Determine annotation position for displaying text on the plot
+text_x_pos <- min(data$Sensor1) + (max(data$Sensor1) - min(data$Sensor1)) * 0.05  # 5% from the left
+text_y_pos <- min(data$Sensor3) + (max(data$Sensor3) - min(data$Sensor3)) * 0.85  # 85% from the bottom
+
+# ------------------------------
+# Create a scatter plot of raw analog values with best-fit line
+# ------------------------------
+plot <- ggplot(data, aes(x = Sensor1, y = Sensor3)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("Raw Analog Values: Open vs Big Hole") +
+  # Set x-axis label
+  xlab("Sensor 1 Raw Analog Value") +
+  # Set y-axis label
+  ylab("Sensor 3 Raw Analog Value") +
+  # Use a minimal theme for a clean layout
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor1_vs_Sensor3_AnalogValues_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results (Sensor 1 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r plot 6, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 1 vs. Sensor 3 dB Values with Statistics
+# ===============================
+# ------------------------------
+# Compute linear regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3_dB = slope * Sensor1_dB + intercept
+model <- lm(Sensor3_dB ~ Sensor1_dB, data = data)
+
+# Display the regression summary in the console
+summary(model)
+
+# Extract regression parameters
+# Extract the slope (coefficient for Sensor1_dB)
+slope <- coef(model)[2]
+# Extract the y-intercept
+intercept <- coef(model)[1]
+# Compute the R-squared value, indicating model fit
+r_squared <- summary(model)$r.squared
+# Compute correlation coefficient as square root of R-squared
+correlation_coefficient <- sqrt(r_squared)
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+# Format the regression parameters as a text string to display on the plot
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# ------------------------------
+# Determine annotation position on the plot
+# ------------------------------
+# Set the x-position for annotation as 5% from the left side
+text_x_pos <- min(data$Sensor1_dB) + (max(data$Sensor1_dB) - min(data$Sensor1_dB)) * 0.05  
+# Set the y-position for annotation as 85% from the bottom
+text_y_pos <- min(data$Sensor3_dB) + (max(data$Sensor3_dB) - min(data$Sensor3_dB)) * 0.85  
+
+# ------------------------------
+# Create a scatter plot with best-fit line
+# ------------------------------
+# Generate a scatter plot using ggplot2
+plot <- ggplot(data, aes(x = Sensor1_dB, y = Sensor3_dB)) +
+  # Add scatter points in blue with 50% transparency
+  geom_point(alpha = 0.5, color = "blue") +
+  # Add a linear regression line (best-fit line) in red
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  # Annotate the plot with regression parameters
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  # Set the plot title
+  ggtitle("dB values: Open vs Big Hole") +
+  # Set x-axis label
+  xlab("Sensor 1 (dB)") +
+  # Set y-axis label
+  ylab("Sensor 3 (dB)") +
+  theme_minimal()
+
+# ------------------------------
+# Display the plot
+# ------------------------------
+# Print the scatter plot with best-fit line
+print(plot)
+
+# ------------------------------
+# Save the plot as a JPEG file
+# ------------------------------
+ggsave("Sensor1_vs_Sensor3_Correlation_dB_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+# Display regression results with explanatory text
+cat("\n--- Regression Results (Sensor 1 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+```{r plot 7, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 2 vs. Sensor 3 dB Values with Statistics
+# ===============================
+# ------------------------------
+# Compute linear regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3_dB = slope * Sensor2_dB + intercept
+model <- lm(Sensor3_dB ~ Sensor2_dB, data = data)
+
+# Display the regression summary in the console
+summary(model)
+
+# Extract regression parameters
+slope <- coef(model)[2]  # The slope of the regression line
+intercept <- coef(model)[1]  # The y-intercept
+r_squared <- summary(model)$r.squared  # R-squared value
+correlation_coefficient <- sqrt(r_squared)  # Square root of R-squared
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# ------------------------------
+# Determine annotation position
+# ------------------------------
+text_x_pos <- min(data$Sensor2_dB) + (max(data$Sensor2_dB) - min(data$Sensor2_dB)) * 0.05  
+text_y_pos <- min(data$Sensor3_dB) + (max(data$Sensor3_dB) - min(data$Sensor3_dB)) * 0.85  
+
+# ------------------------------
+# Create scatter plot with best-fit line
+# ------------------------------
+plot <- ggplot(data, aes(x = Sensor2_dB, y = Sensor3_dB)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  ggtitle("dB Values: Small Hole vs Big Hole") +
+  xlab("Sensor 2 (dB)") +
+  ylab("Sensor 3 (dB)") +
+  theme_minimal()
+
+# ------------------------------
+# Display and save the plot
+# ------------------------------
+print(plot)
+ggsave("Sensor2_vs_Sensor3_Correlation_dB_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+cat("\n--- Regression Results (Sensor 2 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r plot 8, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 2 vs. Sensor 3 Voltage Values with Statistics
+# ===============================
+# ------------------------------
+# Compute linear regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3_Voltage = slope * Sensor2_Voltage + intercept
+model <- lm(Sensor3_Voltage ~ Sensor2_Voltage, data = data)
+
+# Display the regression summary in the console
+summary(model)
+
+# Extract regression parameters
+slope <- coef(model)[2]
+intercept <- coef(model)[1]
+r_squared <- summary(model)$r.squared
+correlation_coefficient <- sqrt(r_squared)
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# ------------------------------
+# Determine annotation position
+# ------------------------------
+text_x_pos <- min(data$Sensor2_Voltage) + (max(data$Sensor2_Voltage) - min(data$Sensor2_Voltage)) * 0.05  
+text_y_pos <- min(data$Sensor3_Voltage) + (max(data$Sensor3_Voltage) - min(data$Sensor3_Voltage)) * 0.85  
+
+# ------------------------------
+# Create scatter plot with best-fit line
+# ------------------------------
+plot <- ggplot(data, aes(x = Sensor2_Voltage, y = Sensor3_Voltage)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  ggtitle("Voltage Values: Small Hole vs Big Hole") +
+  xlab("Sensor 2 Voltage (V)") +
+  ylab("Sensor 3 Voltage (V)") +
+  theme_minimal()
+
+# ------------------------------
+# Display and save the plot
+# ------------------------------
+print(plot)
+ggsave("Sensor2_vs_Sensor3_Correlation_Voltage_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+cat("\n--- Regression Results (Sensor 2 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r plot 9, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+# ===============================
+# Plot Sensor 2 vs. Sensor 3 Raw Analog Values with Statistics
+# ===============================
+# ------------------------------
+# Compute linear regression
+# ------------------------------
+# Fit a linear regression model where:
+# Sensor3 = slope * Sensor2 + intercept
+model <- lm(Sensor3 ~ Sensor2, data = data)
+
+# Display the regression summary in the console
+summary(model)
+
+# Extract regression parameters
+slope <- coef(model)[2]
+intercept <- coef(model)[1]
+r_squared <- summary(model)$r.squared
+correlation_coefficient <- sqrt(r_squared)
+
+# ------------------------------
+# Create text annotation for the plot
+# ------------------------------
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation_coefficient, 3)
+)
+
+# ------------------------------
+# Determine annotation position
+# ------------------------------
+text_x_pos <- min(data$Sensor2) + (max(data$Sensor2) - min(data$Sensor2)) * 0.05  
+text_y_pos <- min(data$Sensor3) + (max(data$Sensor3) - min(data$Sensor3)) * 0.85  
+
+# ------------------------------
+# Create scatter plot with best-fit line
+# ------------------------------
+plot <- ggplot(data, aes(x = Sensor2, y = Sensor3)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  annotate("text", x = text_x_pos, y = text_y_pos, label = regression_text, size = 5, hjust = 0, color = "black") +
+  ggtitle("Raw Analog Values: Small Hole vs Big Hole") +
+  xlab("Sensor 2 Raw Analog Value") +
+  ylab("Sensor 3 Raw Analog Value") +
+  theme_minimal()
+
+# ------------------------------
+# Display and save the plot
+# ------------------------------
+print(plot)
+ggsave("Sensor2_vs_Sensor3_Correlation_Raw_NEW.jpeg", plot = plot, width = 6, height = 4, dpi = 300)
+
+# ------------------------------
+# Print regression results to the console
+# ------------------------------
+cat("\n--- Regression Results (Sensor 2 vs. Sensor 3) ---\n")
+cat("Slope:", slope, "\n")
+cat("Intercept:", intercept, "\n")
+cat("R-squared:", r_squared, "\n")
+cat("Correlation Coefficient:", correlation_coefficient, "\n")
+```
+
+```{r PLot 1 open vs small hole dB binning for dB readings, include=TRUE}
+# Set bin interval (in milliseconds)
+bin_interval <- 100  # Change as needed
+
+# Get time range
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# Calculate number of bins (round up to cover full range)
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# Preallocate arrays
+binned_Timestamps   = numeric(n_bins)
+binned_Sensor1_dB   = numeric(n_bins)
+binned_Sensor2_dB   = numeric(n_bins)
+binned_Sensor3_dB   = numeric(n_bins)
+
+
+# Loop to compute bin averages
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+
+  # Compute mean values 
+  binned_Timestamps[i]   <- t_start
+  binned_Sensor1_dB[i]   <- mean(bin_rows$Sensor1_dB)
+  binned_Sensor2_dB[i]   <- mean(bin_rows$Sensor2_dB)
+  binned_Sensor3_dB[i]   <- mean(bin_rows$Sensor3_dB)
+}
+
+# Combine into a data frame
+binned_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_dB = binned_Sensor1_dB,
+  Sensor2_dB = binned_Sensor2_dB,
+  Sensor3_dB = binned_Sensor3_dB
+)
+
+# Regression and plotting (Sensor1 vs Sensor2)
+model <- lm(Sensor2_dB ~ Sensor1_dB, data = binned_df)
+slope <- coef(model)[2]
+intercept <- coef(model)[1]
+r_squared <- summary(model)$r.squared
+correlation <- sqrt(r_squared)
+
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation, 3)
+)
+View(binned_df)
+
+text_x <- min(binned_df$Sensor1_dB) + 0.05 * diff(range(binned_df$Sensor1_dB))
+text_y <- min(binned_df$Sensor2_dB) + 0.85 * diff(range(binned_df$Sensor2_dB))
+
+# Plot
+plot <- ggplot(binned_df, aes(x = Sensor1_dB, y = Sensor2_dB)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x, y = text_y, label = regression_text, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 vs Sensor 2 (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (dB)") +
+  ylab("Sensor 2 (dB)") +
+  theme_minimal()
+
+print(plot)
+```
+
+```{r PLot 2 open vs small hole raw readings, include=TRUE}
+# ===============================
+# R Script: Binned ADC Comparison
+# ===============================
+# This script bins raw ADC values from Sensor1 and Sensor2,
+# computes averages within each bin, and generates a correlation plot
+# between the open and small hole configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps   <- numeric(n_bins)
+binned_Sensor1_ADC  <- numeric(n_bins)
+binned_Sensor2_ADC  <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]  <- t_start
+  binned_Sensor1_ADC[i] <- mean(bin_rows$Sensor1)
+  binned_Sensor2_ADC[i] <- mean(bin_rows$Sensor2)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_adc_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_ADC = binned_Sensor1_ADC,
+  Sensor2_ADC = binned_Sensor2_ADC
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_adc <- lm(Sensor2_ADC ~ Sensor1_ADC, data = binned_adc_df)
+slope_adc <- coef(model_adc)[2]
+intercept_adc <- coef(model_adc)[1]
+r_squared_adc <- summary(model_adc)$r.squared
+correlation_adc <- sqrt(r_squared_adc)
+
+regression_text_adc <- paste(
+  "Slope:", round(slope_adc, 3), "\n",
+  "Intercept:", round(intercept_adc, 3), "\n",
+  "R-squared:", round(r_squared_adc, 3), "\n",
+  "Correlation:", round(correlation_adc, 3)
+)
+
+text_x_adc <- min(binned_adc_df$Sensor1_ADC) + 0.05 * diff(range(binned_adc_df$Sensor1_ADC))
+text_y_adc <- min(binned_adc_df$Sensor2_ADC) + 0.85 * diff(range(binned_adc_df$Sensor2_ADC))
+
+# ------------------------------
+# Plot
+# ------------------------------
+plot_adc <- ggplot(binned_adc_df, aes(x = Sensor1_ADC, y = Sensor2_ADC)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_adc, y = text_y_adc, label = regression_text_adc, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 2 (Small Hole) - Raw ADC (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (ADC)") +
+  ylab("Sensor 2 (ADC)") +
+  theme_minimal()
+
+print(plot_adc)
+
+
+```
+
+```{r PLot 3 open vs small hole voltage readings, include=TRUE}
+# ===============================
+# R Script: Binned Voltage Comparison
+# ===============================
+# This script bins voltage readings from Sensor1 and Sensor2,
+# computes averages within each bin, and generates a correlation plot
+# between the open and small hole configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps     <- numeric(n_bins)
+binned_Sensor1_Voltage <- numeric(n_bins)
+binned_Sensor2_Voltage <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]     <- t_start
+  binned_Sensor1_Voltage[i] <- mean(bin_rows$Sensor1_Voltage)
+  binned_Sensor2_Voltage[i] <- mean(bin_rows$Sensor2_Voltage)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_voltage_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_Voltage = binned_Sensor1_Voltage,
+  Sensor2_Voltage = binned_Sensor2_Voltage
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_voltage <- lm(Sensor2_Voltage ~ Sensor1_Voltage, data = binned_voltage_df)
+slope_voltage <- coef(model_voltage)[2]
+intercept_voltage <- coef(model_voltage)[1]
+r_squared_voltage <- summary(model_voltage)$r.squared
+correlation_voltage <- sqrt(r_squared_voltage)
+
+regression_text_voltage <- paste(
+  "Slope:", round(slope_voltage, 3), "\n",
+  "Intercept:", round(intercept_voltage, 3), "\n",
+  "R-squared:", round(r_squared_voltage, 3), "\n",
+  "Correlation:", round(correlation_voltage, 3)
+)
+
+text_x_voltage <- min(binned_voltage_df$Sensor1_Voltage) + 0.05 * diff(range(binned_voltage_df$Sensor1_Voltage))
+text_y_voltage <- min(binned_voltage_df$Sensor2_Voltage) + 0.85 * diff(range(binned_voltage_df$Sensor2_Voltage))
+
+# ------------------------------
+# Plot
+# ------------------------------
+plot_voltage <- ggplot(binned_voltage_df, aes(x = Sensor1_Voltage, y = Sensor2_Voltage)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_voltage, y = text_y_voltage, label = regression_text_voltage, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 2 (Small Hole) - Voltage (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (Voltage)") +
+  ylab("Sensor 2 (Voltage)") +
+  theme_minimal()
+
+print(plot_voltage)
+
+```
+
+```{r PLot 4 open vs Big hole raw readings, include=TRUE}
+# ===============================
+# R Script: Binned Raw ADC - Open vs Big Hole
+# ===============================
+# This script bins raw ADC values from Sensor1 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the open and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps    <- numeric(n_bins)
+binned_Sensor1_ADC   <- numeric(n_bins)
+binned_Sensor3_ADC   <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]   <- t_start
+  binned_Sensor1_ADC[i]  <- mean(bin_rows$Sensor1)
+  binned_Sensor3_ADC[i]  <- mean(bin_rows$Sensor3)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_adc_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_ADC = binned_Sensor1_ADC,
+  Sensor3_ADC = binned_Sensor3_ADC
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_adc_big <- lm(Sensor3_ADC ~ Sensor1_ADC, data = binned_adc_big_df)
+slope_adc_big <- coef(model_adc_big)[2]
+intercept_adc_big <- coef(model_adc_big)[1]
+r_squared_adc_big <- summary(model_adc_big)$r.squared
+correlation_adc_big <- sqrt(r_squared_adc_big)
+
+regression_text_adc_big <- paste(
+  "Slope:", round(slope_adc_big, 3), "\n",
+  "Intercept:", round(intercept_adc_big, 3), "\n",
+  "R-squared:", round(r_squared_adc_big, 3), "\n",
+  "Correlation:", round(correlation_adc_big, 3)
+)
+
+text_x_adc_big <- min(binned_adc_big_df$Sensor1_ADC) + 0.05 * diff(range(binned_adc_big_df$Sensor1_ADC))
+text_y_adc_big <- min(binned_adc_big_df$Sensor3_ADC) + 0.85 * diff(range(binned_adc_big_df$Sensor3_ADC))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_adc_big <- ggplot(binned_adc_big_df, aes(x = Sensor1_ADC, y = Sensor3_ADC)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_adc_big, y = text_y_adc_big, label = regression_text_adc_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 3 (Big Hole) - Raw ADC (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (ADC)") +
+  ylab("Sensor 3 (ADC)") +
+  theme_minimal()
+
+print(plot_adc_big)
+
+
+```
+
+```{r PLot 5 open vs Big hole voltage readings, include=TRUE}
+# ===============================
+# R Script: Binned Voltage - Open vs Big Hole
+# ===============================
+# This script bins voltage readings from Sensor1 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the open and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps       <- numeric(n_bins)
+binned_Sensor1_Voltage  <- numeric(n_bins)
+binned_Sensor3_Voltage  <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]      <- t_start
+  binned_Sensor1_Voltage[i] <- mean(bin_rows$Sensor1_Voltage)
+  binned_Sensor3_Voltage[i] <- mean(bin_rows$Sensor3_Voltage)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_voltage_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_Voltage = binned_Sensor1_Voltage,
+  Sensor3_Voltage = binned_Sensor3_Voltage
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_voltage_big <- lm(Sensor3_Voltage ~ Sensor1_Voltage, data = binned_voltage_big_df)
+slope_voltage_big <- coef(model_voltage_big)[2]
+intercept_voltage_big <- coef(model_voltage_big)[1]
+r_squared_voltage_big <- summary(model_voltage_big)$r.squared
+correlation_voltage_big <- sqrt(r_squared_voltage_big)
+
+regression_text_voltage_big <- paste(
+  "Slope:", round(slope_voltage_big, 3), "\n",
+  "Intercept:", round(intercept_voltage_big, 3), "\n",
+  "R-squared:", round(r_squared_voltage_big, 3), "\n",
+  "Correlation:", round(correlation_voltage_big, 3)
+)
+
+text_x_voltage_big <- min(binned_voltage_big_df$Sensor1_Voltage) + 0.05 * diff(range(binned_voltage_big_df$Sensor1_Voltage))
+text_y_voltage_big <- min(binned_voltage_big_df$Sensor3_Voltage) + 0.85 * diff(range(binned_voltage_big_df$Sensor3_Voltage))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_voltage_big <- ggplot(binned_voltage_big_df, aes(x = Sensor1_Voltage, y = Sensor3_Voltage)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_voltage_big, y = text_y_voltage_big, label = regression_text_voltage_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 3 (Big Hole) - Voltage (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (Voltage)") +
+  ylab("Sensor 3 (Voltage)") +
+  theme_minimal()
+
+print(plot_voltage_big)
+
+
+```
+
+```{r PLot 6 open vs Big hole dB readings, include=TRUE}
+# ===============================
+# R Script: Binned dB - Open vs Big Hole
+# ===============================
+# This script bins decibel (dB) values from Sensor1 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the open and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps   <- numeric(n_bins)
+binned_Sensor1_dB   <- numeric(n_bins)
+binned_Sensor3_dB   <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]   <- t_start
+  binned_Sensor1_dB[i]   <- mean(bin_rows$Sensor1_dB)
+  binned_Sensor3_dB[i]   <- mean(bin_rows$Sensor3_dB)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_dB_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1_dB = binned_Sensor1_dB,
+  Sensor3_dB = binned_Sensor3_dB
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_dB_big <- lm(Sensor3_dB ~ Sensor1_dB, data = binned_dB_big_df)
+slope_dB_big <- coef(model_dB_big)[2]
+intercept_dB_big <- coef(model_dB_big)[1]
+r_squared_dB_big <- summary(model_dB_big)$r.squared
+correlation_dB_big <- sqrt(r_squared_dB_big)
+
+regression_text_dB_big <- paste(
+  "Slope:", round(slope_dB_big, 3), "\n",
+  "Intercept:", round(intercept_dB_big, 3), "\n",
+  "R-squared:", round(r_squared_dB_big, 3), "\n",
+  "Correlation:", round(correlation_dB_big, 3)
+)
+
+text_x_dB_big <- min(binned_dB_big_df$Sensor1_dB) + 0.05 * diff(range(binned_dB_big_df$Sensor1_dB))
+text_y_dB_big <- min(binned_dB_big_df$Sensor3_dB) + 0.85 * diff(range(binned_dB_big_df$Sensor3_dB))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_dB_big <- ggplot(binned_dB_big_df, aes(x = Sensor1_dB, y = Sensor3_dB)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_dB_big, y = text_y_dB_big, label = regression_text_dB_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 3 (Big Hole) - dB (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 1 (dB)") +
+  ylab("Sensor 3 (dB)") +
+  theme_minimal()
+
+print(plot_dB_big)
+
+
+```
+
+```{r PLot 7 small hole vs Big hole raw readings, include=TRUE}
+# ===============================
+# R Script: Binned Raw ADC - Small Hole vs Big Hole
+# ===============================
+# This script bins raw ADC values from Sensor2 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the small hole (6 mm) and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps   <- numeric(n_bins)
+binned_Sensor2_ADC  <- numeric(n_bins)
+binned_Sensor3_ADC  <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]  <- t_start
+  binned_Sensor2_ADC[i] <- mean(bin_rows$Sensor2)
+  binned_Sensor3_ADC[i] <- mean(bin_rows$Sensor3)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_adc_small_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor2_ADC = binned_Sensor2_ADC,
+  Sensor3_ADC = binned_Sensor3_ADC
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_adc_small_big <- lm(Sensor3_ADC ~ Sensor2_ADC, data = binned_adc_small_big_df)
+slope_adc_small_big <- coef(model_adc_small_big)[2]
+intercept_adc_small_big <- coef(model_adc_small_big)[1]
+r_squared_adc_small_big <- summary(model_adc_small_big)$r.squared
+correlation_adc_small_big <- sqrt(r_squared_adc_small_big)
+
+regression_text_adc_small_big <- paste(
+  "Slope:", round(slope_adc_small_big, 3), "\n",
+  "Intercept:", round(intercept_adc_small_big, 3), "\n",
+  "R-squared:", round(r_squared_adc_small_big, 3), "\n",
+  "Correlation:", round(correlation_adc_small_big, 3)
+)
+
+text_x_adc_small_big <- min(binned_adc_small_big_df$Sensor2_ADC) + 0.05 * diff(range(binned_adc_small_big_df$Sensor2_ADC))
+text_y_adc_small_big <- min(binned_adc_small_big_df$Sensor3_ADC) + 0.85 * diff(range(binned_adc_small_big_df$Sensor3_ADC))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_adc_small_big <- ggplot(binned_adc_small_big_df, aes(x = Sensor2_ADC, y = Sensor3_ADC)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_adc_small_big, y = text_y_adc_small_big, label = regression_text_adc_small_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 2 (Small Hole) vs Sensor 3 (Big Hole) - Raw ADC (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 2 (ADC)") +
+  ylab("Sensor 3 (ADC)") +
+  theme_minimal()
+
+print(plot_adc_small_big)
+
+
+
+```
+
+```{r PLot 8 small hole vs Big hole volatge readings, include=TRUE}
+# ===============================
+# R Script: Binned Voltage - Small Hole vs Big Hole
+# ===============================
+# This script bins voltage readings from Sensor2 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the small hole (6 mm) and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps       <- numeric(n_bins)
+binned_Sensor2_Voltage  <- numeric(n_bins)
+binned_Sensor3_Voltage  <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]      <- t_start
+  binned_Sensor2_Voltage[i] <- mean(bin_rows$Sensor2_Voltage)
+  binned_Sensor3_Voltage[i] <- mean(bin_rows$Sensor3_Voltage)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_voltage_small_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor2_Voltage = binned_Sensor2_Voltage,
+  Sensor3_Voltage = binned_Sensor3_Voltage
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_voltage_small_big <- lm(Sensor3_Voltage ~ Sensor2_Voltage, data = binned_voltage_small_big_df)
+slope_voltage_small_big <- coef(model_voltage_small_big)[2]
+intercept_voltage_small_big <- coef(model_voltage_small_big)[1]
+r_squared_voltage_small_big <- summary(model_voltage_small_big)$r.squared
+correlation_voltage_small_big <- sqrt(r_squared_voltage_small_big)
+
+regression_text_voltage_small_big <- paste(
+  "Slope:", round(slope_voltage_small_big, 3), "\n",
+  "Intercept:", round(intercept_voltage_small_big, 3), "\n",
+  "R-squared:", round(r_squared_voltage_small_big, 3), "\n",
+  "Correlation:", round(correlation_voltage_small_big, 3)
+)
+
+text_x_voltage_small_big <- min(binned_voltage_small_big_df$Sensor2_Voltage) + 0.05 * diff(range(binned_voltage_small_big_df$Sensor2_Voltage))
+text_y_voltage_small_big <- min(binned_voltage_small_big_df$Sensor3_Voltage) + 0.85 * diff(range(binned_voltage_small_big_df$Sensor3_Voltage))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_voltage_small_big <- ggplot(binned_voltage_small_big_df, aes(x = Sensor2_Voltage, y = Sensor3_Voltage)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_voltage_small_big, y = text_y_voltage_small_big, label = regression_text_voltage_small_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 2 (Small Hole) vs Sensor 3 (Big Hole) - Voltage (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 2 (Voltage)") +
+  ylab("Sensor 3 (Voltage)") +
+  theme_minimal()
+
+print(plot_voltage_small_big)
+
+
+```
+
+```{r PLot 9 small hole vs Big hole dB readings, include=TRUE}
+# ===============================
+# R Script: Binned dB - Small Hole vs Big Hole
+# ===============================
+# This script bins dB values from Sensor2 and Sensor3,
+# computes averages within each bin, and generates a correlation plot
+# between the small hole (6 mm) and large hole (1 inch) configurations.
+
+# ------------------------------
+# Set bin interval (in milliseconds)
+# ------------------------------
+bin_interval <- 100  # Change as needed
+
+# ------------------------------
+# Get time range
+# ------------------------------
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# ------------------------------
+# Calculate number of bins (round up to cover full range)
+# ------------------------------
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# ------------------------------
+# Preallocate arrays
+# ------------------------------
+binned_Timestamps   <- numeric(n_bins)
+binned_Sensor2_dB   <- numeric(n_bins)
+binned_Sensor3_dB   <- numeric(n_bins)
+
+# ------------------------------
+# Loop to compute bin averages
+# ------------------------------
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+  
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+  
+  # Compute mean values 
+  binned_Timestamps[i]   <- t_start
+  binned_Sensor2_dB[i]   <- mean(bin_rows$Sensor2_dB)
+  binned_Sensor3_dB[i]   <- mean(bin_rows$Sensor3_dB)
+}
+
+# ------------------------------
+# Combine into a data frame
+# ------------------------------
+binned_dB_small_big_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor2_dB = binned_Sensor2_dB,
+  Sensor3_dB = binned_Sensor3_dB
+)
+
+# ------------------------------
+# Regression and correlation analysis
+# ------------------------------
+model_dB_small_big <- lm(Sensor3_dB ~ Sensor2_dB, data = binned_dB_small_big_df)
+slope_dB_small_big <- coef(model_dB_small_big)[2]
+intercept_dB_small_big <- coef(model_dB_small_big)[1]
+r_squared_dB_small_big <- summary(model_dB_small_big)$r.squared
+correlation_dB_small_big <- sqrt(r_squared_dB_small_big)
+
+regression_text_dB_small_big <- paste(
+  "Slope:", round(slope_dB_small_big, 3), "\n",
+  "Intercept:", round(intercept_dB_small_big, 3), "\n",
+  "R-squared:", round(r_squared_dB_small_big, 3), "\n",
+  "Correlation:", round(correlation_dB_small_big, 3)
+)
+
+text_x_dB_small_big <- min(binned_dB_small_big_df$Sensor2_dB) + 0.05 * diff(range(binned_dB_small_big_df$Sensor2_dB))
+text_y_dB_small_big <- min(binned_dB_small_big_df$Sensor3_dB) + 0.85 * diff(range(binned_dB_small_big_df$Sensor3_dB))
+
+# ------------------------------
+# Plot
+# ------------------------------
+library(ggplot2)
+
+plot_dB_small_big <- ggplot(binned_dB_small_big_df, aes(x = Sensor2_dB, y = Sensor3_dB)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x_dB_small_big, y = text_y_dB_small_big, label = regression_text_dB_small_big, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 2 (Small Hole) vs Sensor 3 (Big Hole) - dB (Binned Every", bin_interval, "ms)")) +
+  xlab("Sensor 2 (dB)") +
+  ylab("Sensor 3 (dB)") +
+  theme_minimal()
+
+print(plot_dB_small_big)
+
+
+```
+
+
+
+
+```{r binning for raw readings, include=TRUE}
+
+# Set bin interval (in milliseconds)
+bin_interval <- 100  # Change as needed
+
+# Get time range
+start_time <- min(data$Timestamp)
+end_time <- max(data$Timestamp)
+
+# Calculate number of bins (round up to cover full range)
+n_bins <- ceiling((end_time - start_time) / bin_interval)
+
+# Preallocate arrays
+binned_Timestamps   <- numeric(n_bins)
+binned_Sensor1      <- numeric(n_bins)
+binned_Sensor2      <- numeric(n_bins)
+binned_Sensor3      <- numeric(n_bins)
+
+# Loop to compute bin averages
+for (i in 1:n_bins) {
+  # Current bin start and end time
+  t_start <- start_time + (i - 1) * bin_interval
+  t_end   <- t_start + bin_interval
+
+  # Get data in this bin
+  bin_rows <- data[data$Timestamp >= t_start & data$Timestamp < t_end, ]
+
+  # Compute mean values 
+  binned_Timestamps[i] <- t_start
+  binned_Sensor1[i]    <- mean(bin_rows$Sensor1)
+  binned_Sensor2[i]    <- mean(bin_rows$Sensor2)
+  binned_Sensor3[i]    <- mean(bin_rows$Sensor3)
+}
+
+# Combine into a data frame
+binned_df <- data.frame(
+  Time = binned_Timestamps,
+  Sensor1 = binned_Sensor1,
+  Sensor2 = binned_Sensor2,
+  Sensor3 = binned_Sensor3
+)
+
+# View the binned raw ADC data
+View(binned_df)  # or use print(binned_df)
+
+```
