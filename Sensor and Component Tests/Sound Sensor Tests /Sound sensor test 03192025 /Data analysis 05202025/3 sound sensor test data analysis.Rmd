@@ -746,7 +746,7 @@ cat("Correlation Coefficient:", correlation_coefficient, "\n")
 
 ```{r PLot 1 open vs small hole dB binning for dB readings, include=TRUE}
 # Set bin interval (in milliseconds)
-bin_interval <- 100  # Change as needed
+bin_interval <- 1000  # Change as needed
 
 # Get time range
 start_time <- min(data$Timestamp)
