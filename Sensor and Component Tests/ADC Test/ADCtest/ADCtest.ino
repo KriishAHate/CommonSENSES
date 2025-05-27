@@ -16,10 +16,13 @@ void setup() {
 
 void loop() {
   int16_t adc0 = ads.readADC_SingleEnded(0);  // Read from A0
+  uint16_t adc0_u = ads.readADC_SingleEnded(0);  // Read from A0
   float voltage = (float)adc0 * 0.1875 / 1000.0; //  cast 
+  float voltage_u = (float)adc0_u * 0.1875 / 1000.0; //  cast 
 
-  Serial.print("ADC Reading: "); Serial.print(adc0);
-  Serial.print(" | Voltage: "); Serial.print(voltage); Serial.println(" V");
-
+  Serial.print("Signed ADC Reading: "); Serial.print(adc0);
+  Serial.print(" | Signed Voltage: "); Serial.print(voltage); Serial.println(" V");
+  Serial.print("Unsigned ADC Reading: "); Serial.print(adc0_u);
+  Serial.print(" | Unsigned Voltage: "); Serial.print(voltage_u); Serial.println(" V");
   delay(1000);
 }
