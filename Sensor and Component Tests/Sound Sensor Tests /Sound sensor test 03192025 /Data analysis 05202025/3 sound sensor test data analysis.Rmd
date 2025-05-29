@@ -1203,7 +1203,7 @@ print(plot_voltage_big)
 # ------------------------------
 # Set bin interval (in milliseconds)
 # ------------------------------
-bin_interval <- 100  # Change as needed
+bin_interval <- 1000  # Change as needed
 
 # ------------------------------
 # Get time range
@@ -1284,6 +1284,69 @@ plot_dB_big <- ggplot(binned_dB_big_df, aes(x = Sensor1_dB, y = Sensor3_dB)) +
 
 print(plot_dB_big)
 
+
+```
+
+```{r PLot 6-1 open vs Big hole dB readings using index as binning instead of time, include=TRUE}
+
+
+# Set bin size
+bin_size <- 100
+
+# Calculate total number of full bins
+n_bins <- floor(nrow(data) / bin_size)
+
+# Preallocate vectors
+binned_Sensor1_dB <- numeric(n_bins)
+binned_Sensor3_dB <- numeric(n_bins)
+
+# Loop to compute means
+for (i in 1:n_bins) {
+  start_index <- ((i - 1) * bin_size) + 1
+  end_index <- i * bin_size
+  
+  bin_rows <- data[start_index:end_index, ]
+  
+  binned_Sensor1_dB[i] <- mean(bin_rows$Sensor1_dB, na.rm = TRUE)
+  binned_Sensor3_dB[i] <- mean(bin_rows$Sensor3_dB, na.rm = TRUE)
+}
+
+# Create binned data frame
+binned_dB_big_df <- data.frame(
+  Bin = 1:n_bins,
+  Sensor1_dB = binned_Sensor1_dB,
+  Sensor3_dB = binned_Sensor3_dB
+)
+
+# Regression
+model_dB_big <- lm(Sensor3_dB ~ Sensor1_dB, data = binned_dB_big_df)
+slope <- coef(model_dB_big)[2]
+intercept <- coef(model_dB_big)[1]
+r_squared <- summary(model_dB_big)$r.squared
+correlation <- sqrt(r_squared)
+
+regression_text <- paste(
+  "Slope:", round(slope, 3), "\n",
+  "Intercept:", round(intercept, 3), "\n",
+  "R-squared:", round(r_squared, 3), "\n",
+  "Correlation:", round(correlation, 3)
+)
+
+text_x <- min(binned_dB_big_df$Sensor1_dB) + 0.05 * diff(range(binned_dB_big_df$Sensor1_dB))
+text_y <- min(binned_dB_big_df$Sensor3_dB) + 0.85 * diff(range(binned_dB_big_df$Sensor3_dB))
+
+# Plot
+library(ggplot2)
+plot_dB_big <- ggplot(binned_dB_big_df, aes(x = Sensor1_dB, y = Sensor3_dB)) +
+  geom_point(alpha = 0.5, color = "darkgreen") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  annotate("text", x = text_x, y = text_y, label = regression_text, size = 5, hjust = 0) +
+  ggtitle(paste("Sensor 1 (Open) vs Sensor 3 (Big Hole) - dB (Binned Every", bin_size, "Samples)")) +
+  xlab("Sensor 1 (dB)") +
+  ylab("Sensor 3 (dB)") +
+  theme_minimal()
+
+print(plot_dB_big)
 
 ```
 
@@ -1489,7 +1552,7 @@ print(plot_voltage_small_big)
 # ------------------------------
 # Set bin interval (in milliseconds)
 # ------------------------------
-bin_interval <- 100  # Change as needed
+bin_interval <- 1000  # Change as needed
 
 # ------------------------------
 # Get time range
