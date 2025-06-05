@@ -16,7 +16,7 @@ void setup() {
 
   T_RH.begin();
 
-  delay(T_RH_setup_time); // For T&RH sensor to setup
+  delay(5000); // For T&RH sensor to setup
 
 }//end setup()
  
