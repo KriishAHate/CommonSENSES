@@ -27,6 +27,8 @@ void loop(){
   Serial.print(T_RH.getTemperature());
 
   Serial.print(T_RH.getHumidity());
+  
+  delay(2000);
 
 }
  
