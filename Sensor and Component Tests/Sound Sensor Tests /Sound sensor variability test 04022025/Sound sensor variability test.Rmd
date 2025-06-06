@@ -1,0 +1,165 @@
+---
+title: "Sound sensor variability test"
+output: word_document
+date: "2025-04-03"
+---
+# Goal: Assess consistency and synchronization between two identical sound sensors by diagnosing and correcting timestamp mismatches.
+
+# Summary of setup:
+# - Two identical sound sensors connected to the same PCB via ADS1115.
+# - Constant sound played for 2 minutes.
+# - Data format: timestamp, sensor1, sensor2.
+# - ADC readings converted to voltage: (ADC / 32768) * 6.144.
+# - Data filtered to include only timestamps ≤ 147019 ms.
+
+# Observed issue:
+# - Grid-like scatter instead of a diagonal cluster, indicating potential timestamp misalignment.
+
+# Suspected cause:
+# - Timestamp discrepancies due to back-to-back reading delays.
+
+# Solution:
+# - Bin data in 100 ms intervals to align sensor readings.
+
+# Steps:
+# 1. Load and filter data.
+# 2. Convert ADC values to voltage.
+# 3. Create 100 ms bins: floor(timestamp / 100) * 100.
+# 4. For each bin, calculate the mean voltage for sensor1 and sensor2.
+# 5. Use the first timestamp in each bin as the representative time.
+
+# Visualization:
+# - Plot binned sensor1 vs sensor2 voltages.
+# - Expect points to cluster more clearly along the diagonal.
+
+# Quantify sensor agreement:
+# - Calculate mean and standard deviation of voltage differences.
+# - Compute Pearson correlation coefficient between the sensors.
+
+```{r Sound sensor variability test, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+library(dplyr)
+# Read the log file containing time-series sound sensor data.
+# Assign column names: timestamp (in milliseconds), sensor1, and sensor2
+data <- read_csv("LOG.TXT", col_names = c("timestamp", "sensor1", "sensor2"))
+
+# Filter data to include only entries between 150 ms and 147019 ms
+filtered_data <- data[data$timestamp >= 10000 & data$timestamp <= 147019, ]
+
+# Define voltage reference based on ADC gain setting (GAIN_TWOTHIRDS = ±6.144V)
+VREF <- 6.144
+
+# Convert raw ADC readings to voltages using:
+# Voltage = (raw reading / 32768.0) * VREF
+filtered_data$Sensor1_Voltage <- (filtered_data$sensor1 / 32768.0) * VREF
+filtered_data$Sensor2_Voltage <- (filtered_data$sensor2 / 32768.0) * VREF
+
+ggplot(filtered_data, aes(x = Sensor1_Voltage, y = Sensor2_Voltage)) +
+  geom_point(color = "#1f77b4", size = 2, alpha = 0.8) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  labs(
+    title = "Sensor 1 vs Sensor 2 Voltage",
+    x = "Sensor 1 Voltage (V)",
+    y = "Sensor 2 Voltage (V)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
+  )
+# Create a new column grouping timestamps into 100 ms bins
+# --------------------------------------------------------
+# This line divides each timestamp (in milliseconds) by 100 and uses floor()
+# to round down to the nearest whole number. This groups timestamps into
+# 100 ms time intervals (e.g., 0–99 ms becomes bin 0, 100–199 ms becomes bin 1, etc.)
+filtered_data$time_bin <- floor(filtered_data$timestamp / 100)
+
+# Aggregate: average voltages in each 100 ms bin
+# ----------------------------------------------
+# This block groups the filtered data by time_bin and calculates the average
+# voltage from Sensor 1 and Sensor 2 for each time bin.
+
+avg_data <- filtered_data %>%
+
+  # Group the data by 100 ms bins created above
+  # Each group contains all rows where the timestamp falls
+  # within the same 100 ms window
+  group_by(time_bin) %>%
+
+  # For each group (i.e., each 100 ms time bin), calculate:
+  summarise(
+    # The mean voltage of Sensor 1, ignoring missing values (NA)
+    Sensor1_Voltage = mean(Sensor1_Voltage, na.rm = TRUE),
+
+    # The mean voltage of Sensor 2, ignoring missing values (NA)
+    Sensor2_Voltage = mean(Sensor2_Voltage, na.rm = TRUE)
+  )
+
+# Note: The result 'avg_data' will contain one row per 100 ms time bin, 
+# with the average Sensor1 and Sensor2 voltages for that time window.
+# You can later reconstruct actual time (e.g., bin 0 = 0 ms, bin 1 = 100 ms, etc.)
+# by multiplying 'time_bin' by 100.
+
+
+# Plot
+ggplot(avg_data, aes(x = Sensor1_Voltage, y = Sensor2_Voltage)) +
+  geom_point(color = "#1f77b4", size = 2, alpha = 0.8) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  labs(
+    title = "Sensor 1 vs Sensor 2 Voltage (Averaged every 100 ms)",
+    x = "Sensor 1 Voltage (V)",
+    y = "Sensor 2 Voltage (V)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
+  )
+
+# Plot time series of Sensor1 - Sensor2 voltage difference
+filtered_data$Voltage_Difference <- filtered_data$Sensor1_Voltage - filtered_data$Sensor2_Voltage
+
+ggplot(filtered_data, aes(x = timestamp, y = Voltage_Difference)) +
+  geom_line(color = "#d62728", alpha = 0.8) +
+  labs(
+    title = "Voltage Difference (Sensor 1 - Sensor 2) Over Time",
+    x = "Timestamp (ms)",
+    y = "Voltage Difference (V)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
+  )
+# Calculate mean and standard deviation in volts for Sensor 1
+sensor1_mean <- mean(filtered_data$Sensor1_Voltage, na.rm = TRUE)
+sensor1_sd <- sd(filtered_data$Sensor1_Voltage, na.rm = TRUE)
+
+# Calculate mean and standard deviation in volts for Sensor 2
+sensor2_mean <- mean(filtered_data$Sensor2_Voltage, na.rm = TRUE)
+sensor2_sd <- sd(filtered_data$Sensor2_Voltage, na.rm = TRUE)
+
+# Display summary statistics in volts
+cat("Sensor 1 (Volts):\n")
+cat("  Mean =", round(sensor1_mean, 4), "V\n")
+cat("  Standard Deviation =", round(sensor1_sd, 4), "V\n\n")
+
+cat("Sensor 2 (Volts):\n")
+cat("  Mean =", round(sensor2_mean, 4), "V\n")
+cat("  Standard Deviation =", round(sensor2_sd, 4), "V\n")
+
+```
+
