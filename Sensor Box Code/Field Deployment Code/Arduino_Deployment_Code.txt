@@ -1,10 +1,8 @@
-#include "arduino_secrets.h"
-
 //**************************************
 //V20250508 do:
 //1. Sample data from sensors every 1 minute
 //2. Log sensor data to SD card and upload to cloud via LTE module every 15 minutes (15 samples)
-//3. Count how much time it takes for the LTE module to upload data every round and log and upload the time with the sensor data
+//3. Count how much time it takes for the LTE module to upload data every round and log and upload the time with the sensor data. Removed in V20250604
 //4. Log error messages to SD card
 //5. Add uploading error message to cloud and log to SD
 //6. error message lookup table: 
@@ -16,18 +14,29 @@
   //E5           | LTE module receiving data from Arduino timeout
   //E6           | SD module failure
   //E7           | Buffer overflow
+  //E8           | SD open file failure
+  //E9           | SD Error logging failure
 //7. add ADC module
 
 //V20250604 change:
-//1. Added box No. to the sample data uploaded
+//1. Added Box ID to the sample data uploaded
+
+//V20250606 change:
+//1. Put Box ID to EEPROM
+//2. Added Month and Date to the data uploaded
+
+//V20250606_2 change:
+//1. Added Box ID to data file name that saved to SD card
+//2. Added code to send error message to LTE when SD fails to log data or error message
+//3. Added time stamp to the error message to be uploaded to LTE
 
 //Note:
 //1. After turning on the SD module, you should use SD.begin() to start the SD module. For LTE module no initiallization is needed.
 //2. When the RTC is missing, the logError() cannot get RTC time, so the time will be wrong, but the error code will be correct.
 //3. T&RH sensor need 5 seconds to setup
-//4. If T&RH sensor missing, T_RH.read() function will stuck the whole program
+//4. Without error menage, if T&RH sensor missing, T_RH.read() function will stuck the whole program
 //
-//Ruifeng Song 06/04/2025
+//Ruifeng Song 06/06/2025
 //**************************************
 
 // Libraries
@@ -36,14 +45,15 @@
 #include <SD.h> // For SD module
 #include "AM2315C.h" // For T&RH sensor
 #include <Adafruit_ADS1X15.h> // For ADC, convert noise sensor analog signal to digital
+#include <EEPROM.h> // Get Box ID from EEPROM
 
 // Pin Definitions
 #define MOSFET_LTE 7
 #define MOSFET_SD 8
-#define BUFFER_SIZE 50 // 15 readings * 3 data points per reading + 2 data points for date&time
+#define BUFFER_SIZE 55 // 15 readings * 3 data points per reading + 4 data points for date&time + Box ID
 
 #define sampleNum 15 // log and upload after collecting 15 samples
-#define interval 60000 // Sensor sampling interval in milliseconds (60,000 ms = 1 minute)
+#define interval 1000 // Sensor sampling interval in milliseconds (60,000 ms = 1 minute)
 #define delayTime 1000 // Set delay_time to be 1 second
 #define LTE_conn_time 120 // LTE connection timeout 120 seconds
 #define LTE_recv_time 20 // LTE data receiving timeout 20 seconds
@@ -52,8 +62,6 @@
 #define T_RH_setup_time 5000 // 5 seconds to_setup T&RH sensor
 #define one_minute 60000
 
-#define Box_Num 1
-
 // Global Variables
 RTC_DS3231 rtc;
 Adafruit_ADS1115 ads1115; // Create ADC instance
@@ -61,16 +69,17 @@ File myFile; // Data file in SD
 File errorFile; // Error file in SD
 char filename[15];
 AM2315C T_RH; // T&RH sensor
-int lastDay = 0;
 int buffer[BUFFER_SIZE]; // Buffer to store integer data
 int bufferIndex = 0;     // Tracks the next position to put data in the buffer
-int hour, minute;
+int month, date, hour, minute;
 int temp, hum, dbValue;
 
-char CharComma = ',';  // Define CharComma as a comma character
-char LTEreadyMark = '$'; // LTE will send this mark when it connected to cloud and ready to get message
-char LTEreceivedMark = '#'; // LTE will send this mark when cloud successfully received the whole message
+const char CharComma = ',';  // Define CharComma as a comma character
+const char LTEreadyMark = '$'; // LTE will send this mark when it connected to cloud and ready to get message
+const char LTEreceivedMark = '#'; // LTE will send this mark when cloud successfully received the whole message
 unsigned int delayCount = 0;  // Variable to count duration of each part
+
+int Box_ID;  // Box ID
 
 void setup() {
   pinMode(MOSFET_LTE, OUTPUT);
@@ -80,6 +89,7 @@ void setup() {
 
   Serial.begin(9600); // LTE and Arduino are using Serial port for communication
 
+  // We did not check the initialization here because we will check status for all the sensors later
   // Initialize Sensors
   Wire.begin();
   T_RH.begin();
@@ -90,6 +100,8 @@ void setup() {
 
   // Initialize ADC
   ads1115.begin();
+
+  Box_ID = EEPROM.read(0); // Get Box ID
   
 }//end setup()
 
@@ -139,6 +151,8 @@ void updateDT() {
   DateTime now = rtc.now();
   hour = now.hour();
   minute = now.minute();
+  month = now.month();
+  date = now.day();
 }//end updateDT()
 
 int readTemperatureOne() {
@@ -154,19 +168,15 @@ int readHumidity() {
 }//end readHumidity()
 
 int readSound() {
-  //int voltageValue = analogRead(SoundSensorPin) / 1024.0 * 5 * 50 * 100; //5 is reference voltage, 50 is converting factor for voltage to dB
-  //int voltageValue = analogRead(SoundSensorPin); // Keep raw signal and convert to int
-  // Code above is for analog input, for ADC converted digital input, use the following:
   int voltageValue = ads1115.readADC_SingleEnded(0);
   return voltageValue;
 }//end readSound()
 
 void getFileName() {
+  
   DateTime now = rtc.now();
-  if (now.day() != lastDay) {
-    sprintf(filename, "%04d%02d%02d.txt", now.year(), now.month(), now.day());
-    lastDay = now.day();
-  }//end if()
+  sprintf(filename, "%02d%02d%02d%02d.txt", Box_ID, now.year() % 100, now.month(), now.day());
+  
 }//end getFileName()
 
 void updateData() {
@@ -177,10 +187,13 @@ void updateData() {
 }//end updateData()
 
 void appendToBuffer() {
+  DateTime now = rtc.now();
   // Ensure bufferIndex does not exceed the buffer size
   if (bufferIndex + 5 <= BUFFER_SIZE) { // Updated to account for new parameters
     if (bufferIndex == 0) { // Only append date and time on the first entry
-      buffer[bufferIndex++] = Box_Num;
+      buffer[bufferIndex++] = Box_ID;
+      buffer[bufferIndex++] = month;
+      buffer[bufferIndex++] = date;
       buffer[bufferIndex++] = hour;
       buffer[bufferIndex++] = minute;
     }//end if()
@@ -222,7 +235,7 @@ void write2SD() {
     myFile.println();
     myFile.close();
   } else {
-    //Serial.println(F("E:open SD."));
+    Error2Cloud(8); // Log E8: SD open file failure
   }//end else()
 }//end write2SD()
 
@@ -230,8 +243,8 @@ void write2SD() {
 // Function to log error messages to SD card
 void logError(int ErrorCode) {
   DateTime now = rtc.now();
-  char errorMessage[20];
-  sprintf(errorMessage, "%04d%02d%02d %02d:%02d %01d", 
+  char errorMessage[32];
+  sprintf(errorMessage, "%04d%02d%02d %02d:%02d %02d", 
           now.year(), now.month(), now.day(), now.hour(), now.minute(), ErrorCode);
 
   errorFile = SD.open("ErrorLog.txt", FILE_WRITE);
@@ -239,7 +252,7 @@ void logError(int ErrorCode) {
     errorFile.println(errorMessage);
     errorFile.close();
   } else {
-    // Serial.println("Error logging failed.");
+    Error2Cloud(9); // Log E9: SD Error logging failure
   }//end else()
 }//end logError()
 
@@ -257,9 +270,12 @@ void Data2Cloud() {
 }//end Data2Cloud()
 
 void Error2Cloud(int ErrorCode) {
+  DateTime now = rtc.now();
+  char errorMessage[32];
+  sprintf(errorMessage, "%04d%02d%02d %02d:%02d E%02d", 
+          now.year(), now.month(), now.day(), now.hour(), now.minute(), ErrorCode);
   Serial.flush();
-  Serial.print("E");
-  Serial.print(ErrorCode);
+  Serial.print(errorMessage);
   Serial.println(";"); // End of sending indication
 } // End Error2Cloud()
 

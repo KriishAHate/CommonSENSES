@@ -1,6 +1,8 @@
 #include <SD.h>
+ 
 File myFile;
 #define MOSFET_SD 8
+ 
 void setup()
 {
   Serial.begin(9600);
@@ -9,17 +11,21 @@ void setup()
   // Note that even if it's not used as the CS pin, the hardware SS pin 
   // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
   // or the SD library functions will not work. 
-   pinMode(10, OUTPUT); //Chip select
+  pinMode(10, OUTPUT); //Chip select
   pinMode(MOSFET_SD, OUTPUT);
   digitalWrite(MOSFET_SD, HIGH);
+  delay(5000);
+ 
   if (!SD.begin(10)) {
     Serial.println("initialization failed!");
     return;
   }
   Serial.println("initialization done.");
+ 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
   myFile = SD.open("test.txt", FILE_WRITE);
+ 
   // if the file opened okay, write to it:
   if (myFile) {
     Serial.print("Writing to test.txt...");
@@ -32,6 +38,7 @@ void setup()
     Serial.println("error opening test.txt");
   }
 }
+ 
 void loop()
 {
 	// nothing happens after setup
