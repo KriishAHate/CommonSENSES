@@ -1,17 +1,14 @@
-# Welcome to MkDocs
+# CommonSENSES
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Welcome to the documentation hub for **CommonSENSES** — a customizable, low-cost, environmental sensing platform designed for field deployments.
 
-## Commands
+## What are we trying to measure here?
+The logger is designed to measure **temperature** and **sound** in various environments.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## What’s in this site?
+- **Getting Started**: What all is this system composed of? How to set up and deploy the system.
+- **BOM & Production**: Component lists and the costs for production.
+- **CAD & Schematics**: Mechanical design resources.
+- **Datasheets**: Reference datasheets for sensors and components.
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+For more info on the project goals and design philosophy, visit the [GitHub Repository](https://github.com/kriishhate/CommonSENSES).
