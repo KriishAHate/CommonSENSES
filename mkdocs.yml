@@ -4,6 +4,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Bill of Materials: bill-of-materials.md
   - Getting Started: getting-started.md
   - API Reference: api.md
   - Contributing: contributing.md
