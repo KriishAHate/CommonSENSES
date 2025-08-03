@@ -2,13 +2,8 @@ site_name: CommonSENSES
 theme:
   name: material
 
-markdown_extensions:
-  - attr_list
-  - md_in_html
-
 nav:
   - Home: index.md
-  - Bill of Materials: bill-of-materials.md
   - Getting Started: getting-started.md
   - API Reference: api.md
   - Contributing: contributing.md
