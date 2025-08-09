@@ -1,5 +1,8 @@
+site_name: CommonSENSES Hub
+theme:
+  name: material
+
 markdown_extensions:
   - attr_list
   - admonition
-
-  
+  - pymdownx.detail
