@@ -4,13 +4,12 @@ hide:
 # CommonSENSES Project
 ---
 
-[CommonSENSES Project Website](https://www.commonsensesproject.org/)  
-
 This site is for the **Temperature and Noise sensor** designed by the *Environmental Sensors Group*.  
 It is maintained by **Kriish Hate** and contains resources related to the deployment and development of the sensor box.
 
 ## Useful Links
 
+- **CommonSENSES Project Website** — [Link](https://www.commonsensesproject.org/)
 - **GitHub Repository** — [Link](https://github.com/KriishAHate/CommonSENSES)
 - **Bill of Materials** — [Sheet containing all parts required to build the box along with prices and quantity needed](https://docs.google.com/spreadsheets/d/1LIHscZOmbhi1pNjhAlcfRWXpY6skGgtlG8SqLHRUUec/edit?usp=sharing)
 - **Deployment Inventory Sheet** — [Hardware inventory & box status](https://docs.google.com/spreadsheets/d/1eXZM-tw37Yi_YlRXCOrSJMh17jjvpDAI/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
