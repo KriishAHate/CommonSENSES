@@ -2,7 +2,11 @@ site_name: CommonSENSES Hub
 theme:
   name: material
 
+# Tell MkDocs where the source Markdown lives and where to write the built site
+docs_dir: md
+site_dir: docs
+
 markdown_extensions:
   - attr_list
   - admonition
-  - pymdownx.detail
+  - pymdownx.details
