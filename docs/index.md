@@ -15,3 +15,4 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 - **Deployment Inventory Sheet** — [Hardware inventory & box status](https://docs.google.com/spreadsheets/d/1eXZM-tw37Yi_YlRXCOrSJMh17jjvpDAI/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
 - **Box Deployment Pictures** — [Google Drive Folder](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=sharing)
 - **Box Deployment Checklists** — [Deployment Checklists PDF](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=sharing)
+- **Box Production Checklists** — [Production Checklists PDF](https://docs.google.com/document/d/17hEyU8lfQv0TVCtnW0FwLdmtMJ0wIlS4/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
