@@ -14,6 +14,6 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 - **Bill of Materials** — [Sheet containing all parts required to build the box along with prices and quantity needed](https://docs.google.com/spreadsheets/d/1LIHscZOmbhi1pNjhAlcfRWXpY6skGgtlG8SqLHRUUec/edit?usp=sharing)
 - **Deployment Inventory Sheet** — [Hardware inventory & box status](https://docs.google.com/spreadsheets/d/1eXZM-tw37Yi_YlRXCOrSJMh17jjvpDAI/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
 - **Box Deployment Pictures** — [Google Drive Folder](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=sharing)
-- **Box Deployment Checklists** — [Deployment Checklists PDF](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=sharing)
-- **Box Production Checklists** — [Production Checklists PDF](https://docs.google.com/document/d/17hEyU8lfQv0TVCtnW0FwLdmtMJ0wIlS4/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
+- **Box Deployment Checklists** — [Deployment Checklists DOC](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=sharing)
+- **Box Production Checklists** — [Production Checklists Doc](https://docs.google.com/document/d/17hEyU8lfQv0TVCtnW0FwLdmtMJ0wIlS4/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true)
 - **Box Status Website** — [Particle Website](https://login.particle.io/login)
