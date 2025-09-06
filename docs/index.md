@@ -4,6 +4,9 @@ hide:
 # CommonSENSES Project
 ---
 
+This site is for the **Temperature and Noise sensor** designed by the *Environmental Sensors Group*.  
+It is maintained by **Kriish Hate** and contains resources related to the deployment and development of the sensor box.
+
 ## Field Deployment Quick Links
 
 - **Box Deployment Instruction Sheet** – [Instructions with Images](assets/pdfs/box_deployment_instructions.pdf)  
@@ -16,9 +19,6 @@ hide:
 - **Deployment Inventory Sheet** – [Hardware inventory & box status](https://docs.google.com/spreadsheets/d/1eXZM-tw37Yi_YlRXCOrSJMh17jjvpDAI/edit?usp=sharing&ouid=112033987156217034791&rtpof=true&sd=true) 
 
 ---
-
-This site is for the **Temperature and Noise sensor** designed by the *Environmental Sensors Group*.  
-It is maintained by **Kriish Hate** and contains resources related to the deployment and development of the sensor box.
 
 ## Useful Links
 
