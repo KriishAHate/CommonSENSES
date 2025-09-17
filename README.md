@@ -4,7 +4,7 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 
 ## Field Deployment Quick Links
 
-- **Box Deployment Instruction Sheet** – [Instructions with Images](assets/pdfs/box_deployment_instructions.pdf)  
+- **Box Deployment Instruction Sheet** – <a href="assets/pdfs/box_deployment_instructions.pdf" target="_blank" rel="noopener">Instructions with Images</a>
 - **Field Day Packing List** – [Packing List Doc](assets/pdfs/field_day_packing_list.pdf)  
 - **Box Status Website** – [Particle Website](https://login.particle.io/login)  
 
