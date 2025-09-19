@@ -6,7 +6,7 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 
 - **Box Deployment Checklist** – [Instructions with Images](docs/assets/pdfs/box_deployment_instructions.pdf)
   
-- **Sensor Box Packing List** – [Packing List Doc](docs/assets/pdfs/field_day_packing_list.pdf)
+- **Sensor Box Field Packing Checklist** – [Pdf checklist to print](docs/assets/pdfs/field_day_packing_list.pdf)
  
 - **Box Status Website** – [Particle Website](https://login.particle.io/login)  
 
