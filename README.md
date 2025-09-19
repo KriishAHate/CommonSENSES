@@ -1,5 +1,5 @@
 
-This site is for the **Temperature and Noise sensor** designed by the *Environmental Sensors Group*.  
+This site is for the **Temperature and Noise sensor** designed by the *Environmental Sensors Lab*.  
 It is maintained by **Kriish Hate** and contains resources related to the deployment and development of the sensor box.
 
 ## Field Deployment Quick Links
