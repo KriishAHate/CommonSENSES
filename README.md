@@ -22,7 +22,7 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 - **CommonSENSES Project Website** – [Link](http://www.commonsensesproject.org/)  
 - **GitHub Repository** – [Link](https://github.com/KriishAHate/CommonSENSES)  
 - **Bill of Materials** – [Sheet containing all parts required to build the box along with prices and quantity needed](https://docs.google.com/spreadsheets/d/1IHscZ0mbhi1pNjhAlcfRWXpY6skGgtlG8SqLHRUUec/edit?usp=sharing)   
-- **Box Deployment Pictures** – [Google Drive Folder](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc)  
+- **Box Deployment Pictures** – [Google Drive Folder](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=drive_link)  
 - **Box Deployment Checklist** – [Deployment Checklists Doc](https://drive.google.com/drive/folders/1xgLdxksLypsowWlimX9eZBcJd7cghpnc?usp=sharing)  
 
 
