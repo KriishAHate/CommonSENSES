@@ -23,7 +23,7 @@ It is maintained by **Kriish Hate** and contains resources related to the deploy
 <!-- - **GitHub Repository** – [Link](https://github.com/KriishAHate/CommonSENSES) -->
 - **Bill of Materials** – [Sheet containing all parts required to build the box along with prices and quantity needed](https://docs.google.com/spreadsheets/d/1LIHscZOmbhi1pNjhAlcfRWXpY6skGgtlG8SqLHRUUec/edit?usp=sharing)   
 - **Box Deployment Pictures** – [Google Drive Folder](https://drive.google.com/drive/folders/1xgLdxkslypsoWLilmX9eZBcJd7cghpnc?usp=drive_link)  
-- **CommonSENSES Sensor Data Guide** – [PDF](docs/assets/pdfs/box_deployment_instructions.pdf)
+- **CommonSENSES Sensor Data Guide** – [PDF](docs/assets/pdfs/CommonSENSES_SensorBox_DataOverview)
 
  
 
