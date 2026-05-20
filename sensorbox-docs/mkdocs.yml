@@ -1,0 +1,48 @@
+site_name: Urban Sensor Box – Build Guide
+site_description: A step-by-step guide to building an affordable solar-powered heat and noise monitoring sensor box for cities.
+site_author: Kriish Hate
+site_url: https://KriishAHate.github.io/CommonSENSES/
+
+repo_name: KriishAHate/CommonSENSES
+repo_url: https://github.com/KriishAHate/CommonSENSES
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: black
+      accent: red
+  font:
+    text: JetBrains Mono
+    code: JetBrains Mono
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - open-in-new-tab
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Bill of Materials: bom.md
+  - Mechanical Assembly: mechanical/enclosure.md
+  - Electronics Assembly: electronics/assembly.md
+  - Code Setup: code/setup.md
