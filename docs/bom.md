@@ -1,6 +1,6 @@
 # Bill of Materials
 
-Everything you need to build one sensor box. Buy all of this before you start assembly.
+Everything you need to build one sensor box. Buy all of these items before you start assembly.
 
 **Estimated total cost per unit: ~$450–$500**
 
