@@ -2,7 +2,7 @@
 
 Built at the [Environmental Sensing Laboratory](https://envsensorslab.sites.northeastern.edu/) at Northeastern University as part of the [Common Senses Project](https://www.commonsensesproject.org/).
 
-Full build guide: **[KriishAHate.github.io/CommonSENSES](https://KriishAHate.github.io/CommonSENSES/)**
+Full build guide: **[https://envsensorslab.github.io/CommonSENSES/](https://envsensorslab.github.io/CommonSENSES/)**
 
 ---
 
