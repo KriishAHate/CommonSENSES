@@ -1,10 +1,10 @@
 site_name: Urban Sensor Box – Build Guide
 site_description: A step-by-step guide to building an affordable solar-powered heat and noise monitoring sensor box for cities.
 site_author: Kriish Hate
-site_url: https://KriishAHate.github.io/CommonSENSES/
+site_url: https://envsensorslab.github.io/CommonSENSES/
 
-repo_name: KriishAHate/CommonSENSES
-repo_url: https://github.com/KriishAHate/CommonSENSES
+repo_name: envsensorslab/CommonSENSES
+repo_url: https://github.com/envsensorslab/CommonSENSES
 
 docs_dir: docs
 
