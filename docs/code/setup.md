@@ -30,8 +30,19 @@ Open Arduino IDE, go to **Sketch → Include Library → Manage Libraries** and 
 
 ## Step 1 — Set the Box ID
 
-!!! note "Coming soon"
-    A dedicated script to write the Box ID to EEPROM will be added here. Each box must have a unique ID set before flashing the deployment code.
+Each box must have a unique ID before flashing the deployment code. The ID is stored in the Arduino's EEPROM and is used to label all data uploads and SD card files.
+
+1. Download the script below and open it in Arduino IDE
+2. Change `int Box_ID = 52;` to the correct ID number for your box
+3. Go to **Tools → Board** and select **Arduino Pro Mini**
+4. Go to **Tools → Port** and select the port corresponding to your FTDI cable
+5. Click **Upload**
+6. Serial Monitor will confirm with "ID written to EEPROM."
+
+<a href="/CommonSENSES/assets/BoxIDEEPROM.txt" target="_blank"> BoxIDEEPROM.txt</a>
+
+!!! warning
+    Each box must have a different ID number. If two boxes share the same ID their data files on the SD card will overwrite each other.
 
 ---
 
