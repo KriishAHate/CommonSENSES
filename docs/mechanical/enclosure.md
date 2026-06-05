@@ -26,8 +26,8 @@ The backplate is the structural spine of the whole assembly. Everything mounts t
 
 **Engineering drawings:**
 
-- [BACK_PLATE_5W.pdf](../assets/BackPlate2.pdf) — for 5W solar panel (14.250 in)
-- [BACK_PLATE_10W.pdf](../assets/Backplate3.pdf) — for 10W solar panel (16.250 in)
+- [BACK_PLATE_5W.pdf](../assets/BackPlate1.pdf) — for 5W solar panel (14.250 in)
+- [BACK_PLATE_10W.pdf](../assets/Backplate2.pdf) — for 10W solar panel (16.250 in)
 
 Key specs from the drawing:
 
