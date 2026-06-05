@@ -148,4 +148,4 @@ Before moving to electronics assembly, verify:
 
 Complete this checklist after mechanical assembly.
 
-- [Mechanical & Electrical QA/QC Checklist](../assets/mechanicalandelectricalqaqclist1.pdf)
+- [Mechanical & Electrical QA/QC Checklist](../assets/mechanicalandelectricalqaqclist.pdf)
