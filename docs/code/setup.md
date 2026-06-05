@@ -41,7 +41,7 @@ Before flashing the deployment code, verify each module works individually. Conn
 
 For each test:
 
-1. Download the script and open it in Arduino IDE
+1. Copy the script and open it in Arduino IDE
 2. Go to **Tools → Board** and select **Arduino Pro Mini**
 3. Go to **Tools → Port** and select the port corresponding to your FTDI cable
 4. Click **Upload**
@@ -60,11 +60,11 @@ Checks that the real-time clock is working and keeping accurate time. Before run
 4. Run the script — it will start sending the current time to the Arduino
 5. Stop it after a few seconds with **Ctrl+C**
 
-<a href="/CommonSENSES/assets/RTC_sync.ipynb" target="_blank">Download RTC_sync.ipynb</a>
+<a href="/CommonSENSES/assets/RTC_sync.ipynb" target="_blank"> RTC_sync.ipynb</a>
 
 Then flash the RTC test script to verify the time was set correctly:
 
-<a href="/CommonSENSES/assets/rtc_test.txt" target="_blank">Download rtc_test.txt</a>
+<a href="/CommonSENSES/assets/rtc_test.txt" target="_blank"> rtc_test.txt</a>
 
 **Pass:** Serial Monitor prints the correct current timestamp every second.
 
@@ -74,7 +74,7 @@ Then flash the RTC test script to verify the time was set correctly:
 
 Checks that the AM2315C sensor is wired correctly and returning valid readings. The sensor needs 5 seconds to stabilize after power on before it starts reporting.
 
-<a href="/CommonSENSES/assets/temp_rh_test.txt" target="_blank">Download temp_rh_test.txt</a>
+<a href="/CommonSENSES/assets/temp_rh_test.txt" target="_blank"> temp_rh_test.txt</a>
 
 **Pass:** Readings update every 2 seconds and match a reference thermometer.
 
@@ -84,7 +84,7 @@ Checks that the AM2315C sensor is wired correctly and returning valid readings. 
 
 Checks that the SD module is powered, initialized, and able to write a file. The SD card must be 32 GB or less and formatted as FAT32.
 
-<a href="/CommonSENSES/assets/sd_test.txt" target="_blank">Download sd_test.txt</a>
+<a href="/CommonSENSES/assets/sd_test.txt" target="_blank">sd_test.txt</a>
 
 **Pass:** Serial Monitor prints "Writing to test.txt…done." and the file appears on the SD card.
 
@@ -94,7 +94,7 @@ Checks that the SD module is powered, initialized, and able to write a file. The
 
 Checks that the Arduino and Particle Boron can communicate over serial. The Boron must already be flashed and powered on before running this test — see Step 3 below.
 
-<a href="/CommonSENSES/assets/lte_test.txt" target="_blank">Download lte_test.txt</a>
+<a href="/CommonSENSES/assets/lte_test.txt" target="_blank"> lte_test.txt</a>
 
 **Pass:** The [Particle Console](https://console.particle.io) shows a "Test" event appearing under your device.
 
@@ -112,7 +112,7 @@ The Boron runs its own firmware that handles one job — receive data packets fr
 3. Create a new app and paste the contents of the file below into it
 4. Click **Flash**
 
-<a href="/CommonSENSES/assets/cellular_module.txt" target="_blank">Download cellular_module.txt</a>
+<a href="/CommonSENSES/assets/cellular_module.txt" target="_blank"> cellular_module.txt</a>
 
 The Boron will publish a "Setup Done" event to the Particle Console when it boots successfully.
 
@@ -140,7 +140,7 @@ The main firmware runs the full data collection and upload loop. Here is what it
 3. Go to **Tools → Port** and select the port corresponding to your FTDI cable
 4. Click **Upload**
 
-<a href="/CommonSENSES/assets/deployment.txt" target="_blank">Download deployment.txt</a>
+<a href="/CommonSENSES/assets/deployment.txt" target="_blank"> deployment.txt</a>
 
 ---
 
