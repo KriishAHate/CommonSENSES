@@ -51,7 +51,7 @@ Instructions:
 
 You need two clamping brackets. These are the cross members that the hose clamps thread through to grip the pole.
 
-**Engineering drawing:** [CLAMPING_BRACKET.pdf](../assets/clampingbracket1.pdf)
+**Engineering drawing:** [CLAMPING_BRACKET.pdf](../assets/clampingbracket.pdf)
 
 Key specs from the drawing:
 
