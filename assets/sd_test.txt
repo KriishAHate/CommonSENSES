@@ -1,0 +1,36 @@
+// Ruifeng Song 06/02/2025
+#include <SD.h>
+
+File myFile;
+#define MOSFET_SD 8
+
+void setup() {
+  Serial.begin(9600);
+  Serial.print("Initializing SD card...");
+
+  pinMode(10, OUTPUT);    // Chip select
+  pinMode(MOSFET_SD, OUTPUT);
+  digitalWrite(MOSFET_SD, HIGH);
+  delay(5000);
+
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
+
+  myFile = SD.open("test.txt", FILE_WRITE);
+
+  if (myFile) {
+    Serial.print("Writing to test.txt...");
+    myFile.println("testing 1, 2, 3.");
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    Serial.println("error opening test.txt");
+  }
+}
+
+void loop() {
+  // nothing happens after setup
+}

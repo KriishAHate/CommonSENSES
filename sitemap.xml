@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/bom/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/code/setup/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/deployment/deployment/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/electronics/assembly/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+    <url>
+         <loc>https://envsensorslab.github.io/CommonSENSES/mechanical/enclosure/</loc>
+         <lastmod>2026-06-15</lastmod>
+    </url>
+</urlset>
