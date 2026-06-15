@@ -73,7 +73,7 @@ Instructions:
 
 Three holes go into the enclosure: one for the sound sensor, one for the cable gland, and two small mounting holes.
 
-**Engineering drawing:** [HOLE_TEMPLATE.pdf](../assets/hole_template2.pdf)
+**Engineering drawing:** [HOLE_TEMPLATE.pdf](../assets/holetemplate.pdf)
 
 Key specs from the drawing (all dimensions in inches):
 
