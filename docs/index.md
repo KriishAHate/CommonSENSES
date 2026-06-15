@@ -20,8 +20,8 @@ The Urban Sensor Box is a solar-powered environmental monitor designed for deplo
 
 Readings are taken every **minute** and uploaded to the cloud every **15 minutes** over LTE. Data is also logged locally to an SD card as a backup. The system runs off a 5W solar panel and a 48Wh battery, housed in an IP67-rated enclosure, and mounts to any city pole using hose clamps. Total parts cost: under **$500 per unit**.
 
-For full technical details, refer to the accompanying thesis: 
-Hate, K. *Design of an Affordable Heat and Noise Monitoring Sensor Box for Cities.* [Northeastern University](https://hdl.handle.net/2047/D20859626), 2026. 
+For full technical details, refer to the accompanying [thesis](https://hdl.handle.net/2047/D20859626): 
+Hate, K. *Design of an Affordable Heat and Noise Monitoring Sensor Box for Cities.* Northeastern University, 2026. 
 
 ---
 
