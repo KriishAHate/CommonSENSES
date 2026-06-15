@@ -48,3 +48,4 @@ nav:
   - Mechanical Assembly: mechanical/enclosure.md
   - Electronics Assembly: electronics/assembly.md
   - Code Setup: code/setup.md
+  - Deployment: deployment/deployment.md
